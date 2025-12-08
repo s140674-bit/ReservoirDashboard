@@ -1,0 +1,93 @@
+[theme]
+# Primary brand color for buttons, links, etc. (e.g., deep reservoir blue)
+primaryColor="#0072B2" 
+# Background of the app (e.g., very light gray for contrast)
+backgroundColor="#F5F5F5" 
+# Color of text and headers
+textColor="#191919"
+# Color of the sidebar and secondary backgrounds (e.g., white or darker gray)
+secondaryBackgroundColor="#FFFFFF" 
+# Use a cleaner, professional font
+font="sans serif"
+
+
+# OLD: st.title("🛢 Reservoir Dashboard — Havlena–Odeh Straight-Line Analysis")
+st.sidebar.title("🛢 Havlena–Odeh Analysis") 
+st.sidebar.markdown("---") # Adds a visual line separator
+st.title("Reservoir Material Balance Dashboard") # Keep a less dominant title on the main page
+st.markdown("---") # Visual separator for the main content
+
+
+# 1. Main Plot
+fig.add_trace(go.Scatter(
+    x=prod_clean["x"], 
+    y=prod_clean["y"], 
+    mode="markers", 
+    name="Production Data", 
+    marker=dict(
+        size=8, 
+        color='#E69F00', # Gold/Oil color
+        symbol='circle-open' # Open circles are less cluttered
+    ),
+    # Show Pressure and Np when hovering (High Interactivity Bonus!)
+    hovertemplate="<b>P:</b> %{customdata[0]:,.0f} psia<br><b>Np:</b> %{customdata[1]:,.2f} MMSTB<br><b>X:</b> %{x:.4f}<br><b>Y:</b> %{y:.4f}<extra></extra>",
+    customdata=prod_clean[['P', 'Np']] # Pass the pressure and Np data
+    ),
+    row=1, col=1)
+
+# Add the fitted line
+fig.add_trace(go.Scatter(
+    x=prod_clean["x"], 
+    y=y_fit, 
+    mode="lines", 
+    name=f"Linear Fit: N={N:.2f}, G={G:.2f}", 
+    line=dict(color='#0072B2', width=3) # Deep Blue for the line
+    ),
+    row=1, col=1)
+
+# ... (Rest of the plot code for residuals)
+
+# 2. Residuals Plot (Replace this entire section)
+residuals = prod_clean["y"] - y_fit
+residual_color = np.where(residuals >= 0, '#0072B2', '#D55E00') # Blue for positive, Orange for negative
+
+fig.add_trace(go.Scatter(x=prod_clean["x"], y=residuals, mode='markers', 
+                         name='Residuals', 
+                         marker=dict(size=6, color=residual_color)),
+              row=2, col=1)
+# ... (Rest of the residual plot code)
+
+
+st.header("📈 Analysis Results and Visualizations")
+# Create tabs for clean organization
+tab1, tab2, tab3 = st.tabs(["Regression Plot", "Supporting Data", "Equations & Metrics"])
+
+# --- Tab 1: Regression Plot (Move all plotting code here) ---
+with tab1:
+    st.subheader("Havlena–Odeh Straight-Line Plot (F/Eg vs Eo/Eg)")
+    # PASTE all your fig = make_subplots(...) and st.plotly_chart(fig) code here
+
+# --- Tab 2: Supporting Data (Move all dataframe code here) ---
+with tab2:
+    st.subheader("Calculated Variables ($F, E_o, E_g$) and Plot Data ($X, Y$)")
+    display_cols = ['P', 'Np', 'Gp', 'F', 'Eo', 'Eg', 'x', 'y']
+    if not prod_clean.empty:
+        st.dataframe(prod_clean[display_cols].style.format(precision=4)) 
+        st.subheader("Input Production Data (First 5 Rows)")
+        st.dataframe(prod.head(5))
+    else:
+        st.warning("No data to display.")
+
+# --- Tab 3: Equations & Metrics (Move all metric and equation code here) ---
+with tab3:
+    # PASTE the N, G, m, R2 metrics section (col_N, col_G, col_m, col_R2 = st.columns(4)...) here
+    st.markdown("---")
+    st.subheader("Havlena–Odeh Equation and Fit")
+    st.latex(r'F = N E_o + G E_g \quad \Rightarrow \quad \frac{F}{E_g} = N \frac{E_o}{E_g} + G')
+    st.markdown(f"""
+        The resulting straight-line fit equation is:
+        $$ Y = ({N:,.2f}) X + ({G:,.2f}) $$
+    """)
+
+
+
