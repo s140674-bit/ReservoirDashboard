@@ -1,26 +1,4 @@
-[theme]
-# Primary brand color for buttons, links, sliders, etc. (Deep Reservoir Blue)
-primaryColor="#0072B2" 
 
-# Background color of the main content area (Very light gray for contrast)
-backgroundColor="#F5F5F5" 
-
-# Background color of the sidebar, headers, and secondary UI elements (Clean White)
-secondaryBackgroundColor="#FFFFFF" 
-
-# Color of the text (Dark gray/black)
-textColor="#191919" 
-
-# Font for the application
-font="sans serif"
-
-[client]
-# Ensures the sidebar is always expanded by default, improving layout.
-showSidebarNavigation = true
-
-[global]
-# Allows the app to reload automatically when code changes are saved.
-developmentMode = true
 
 
 
