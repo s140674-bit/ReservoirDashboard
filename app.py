@@ -151,7 +151,7 @@ if uploaded:
         # Display the calculated intermediate variables
         st.subheader("Calculated Variables ($F, E_o, E_g$) and Plot Data ($X, Y$)")
         display_cols = ['p', 'Np', 'Gp', 'F', 'Eo', 'Eg', 'x', 'y']
-       st.dataframe(prod_clean[display_cols].style.format(precision=4))
+        st.dataframe(prod_clean[display_cols].style.format(precision=4))
         st.subheader("Input Production Data (First 5 Rows)")
         st.dataframe(prod.head(5))
 
