@@ -33,6 +33,11 @@ if uploaded:
     try:
         prod = pd.read_excel(uploaded, sheet_name="Production")
         init_df = pd.read_excel(uploaded, sheet_name="Initial")
+        
+        # --- FIX 1: Clean up empty/unnamed columns immediately ---
+        # Drop columns that are entirely NaN (like the leading blank columns)
+        prod = prod.dropna(axis=1, how='all')
+        
         init = pd.Series(init_df["Value"].values, index=init_df["Parameter"].values)
         
         Boi = init["Boi"]
@@ -42,6 +47,18 @@ if uploaded:
     except Exception as e:
         st.error(f"Error loading data. Check your sheet names ('Production', 'Initial') or Initial parameters ('Boi', 'Bgi', 'Rsi'). Details: {e}")
         st.stop()
+
+
+    # --- Input Validation Check (Robustness, using your uppercase 'P') ---
+    required_prod_cols = ["P", "Np", "Gp", "Bo", "Bg", "Rs"]
+    missing_prod_cols = [col for col in required_prod_cols if col not in prod.columns]
+
+    if missing_prod_cols:
+        st.error(f"Input Error: The 'Production' sheet is missing the required columns: {', '.join(missing_prod_cols)}. Please check your Excel column headers for typos!")
+        st.stop()
+    # ------------------------------------------------------------------
+
+    # ... (Rest of the calculation code continues below) ...
 
 
     # --- Input Validation Check (Robustness) ---
