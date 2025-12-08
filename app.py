@@ -21,7 +21,7 @@ with st.sidebar.expander("📝 User Guide: Excel File Format"):
     st.markdown("""
         The uploaded Excel file **must** contain two sheets:
         1. **'Production' Sheet:** Contains time-dependent PVT and production data.
-           * **Required Columns:** `p`, `Np`, `Gp`, `Bo`, `Bg`, `Rs`.
+           * **Required Columns:** `p`, `Np`, `Gp`, `Bo`, `Bg`, `Rs`. (Must be exact match, including case)
         2. **'Initial' Sheet:** Contains initial reservoir parameters.
            * **Required Parameters (Parameter, Value):** Must include `Boi`, `Bgi`, `Rsi`.
     """)
@@ -35,9 +35,12 @@ if uploaded:
         init_df = pd.read_excel(uploaded, sheet_name="Initial")
         
         # --- FIX 1: Clean up empty/unnamed columns immediately ---
-        # Drop columns that are entirely NaN (like the leading blank columns)
         prod = prod.dropna(axis=1, how='all')
         
+        # --- FIX 2: Strip whitespace from all column names (Solves the current issue!) ---
+        prod.columns = prod.columns.str.strip() 
+        # ---------------------------------------------------------------------------------
+
         init = pd.Series(init_df["Value"].values, index=init_df["Parameter"].values)
         
         Boi = init["Boi"]
@@ -49,26 +52,14 @@ if uploaded:
         st.stop()
 
 
-    # --- Input Validation Check (Robustness, using your uppercase 'P') ---
-    required_prod_cols = ["P", "Np", "Gp", "Bo", "Bg", "Rs"]
-    missing_prod_cols = [col for col in required_prod_cols if col not in prod.columns]
-
-    if missing_prod_cols:
-        st.error(f"Input Error: The 'Production' sheet is missing the required columns: {', '.join(missing_prod_cols)}. Please check your Excel column headers for typos!")
-        st.stop()
-    # ------------------------------------------------------------------
-
-    # ... (Rest of the calculation code continues below) ...
-
-
-    # --- Input Validation Check (Robustness) ---
+    # --- Input Validation Check (Using your required uppercase 'P') ---
     required_prod_cols = ["p", "Np", "Gp", "Bo", "Bg", "Rs"]
     missing_prod_cols = [col for col in required_prod_cols if col not in prod.columns]
 
     if missing_prod_cols:
         st.error(f"Input Error: The 'Production' sheet is missing the required columns: {', '.join(missing_prod_cols)}. Please check your Excel column headers for typos!")
         st.stop()
-    # --------------------------------------------------
+    # ------------------------------------------------------------------
 
     # Display Initial Parameters in Sidebar
     st.sidebar.subheader("Initial Parameters Used:")
@@ -109,7 +100,6 @@ if uploaded:
         col_N, col_G, col_m, col_R2 = st.columns(4)
 
         with col_N:
-            # Assumes Np and Gp were given in MMSTB and MMMSCF, making N and G in those units.
             st.metric("Initial Oil in Place (N)", f"{N:,.2f} MMSTB")
         with col_G:
             st.metric("Initial Gas in Place (G)", f"{G:,.2f} MMMSCF")
@@ -180,7 +170,7 @@ if uploaded:
         st.subheader("Calculated Variables ($F, E_o, E_g$) and Plot Data ($X, Y$)")
         display_cols = ['p', 'Np', 'Gp', 'F', 'Eo', 'Eg', 'x', 'y']
         
-        # Use prod_clean for display (Fixes the KeyError)
+        # Use prod_clean for display
         st.dataframe(prod_clean[display_cols].style.format(precision=4)) 
 
         st.subheader("Input Production Data (First 5 Rows)")
