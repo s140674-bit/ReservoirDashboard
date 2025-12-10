@@ -340,7 +340,7 @@ if len(prod_clean) > 1:
 
 
         # --- Tab 3: Equations & Metrics ---
-        with tab3:
+    with tab3:
             st.subheader("Final Calculated Parameters")
             # Use columns for a neat presentation of metrics
             col_N, col_G, col_m, col_R2 = st.columns(4)
@@ -364,7 +364,7 @@ if len(prod_clean) > 1:
 
 
         # --- Tab 1: Interactive Plot with Residuals (Custom Colors/Shapes/Hover Data) ---
-        with tab1:
+    with tab1:
             st.subheader("Havlena–Odeh Straight-Line Plot (F / (Eo + Efw) vs (Eg + Efw) / (Eo + Efw))")
             
             fig = make_subplots(rows=2, cols=1, 
@@ -426,7 +426,7 @@ if len(prod_clean) > 1:
             st.plotly_chart(fig, use_container_width=True)
 
         # --- Tab 2: Supporting Data Tables ---
-        with tab2:
+     with tab2:
             st.subheader("Calculated Variables ($F, E_o, E_g, E_{fw}$) and Plot Data ($X, Y$)")
             display_cols = ['p', 'Np', 'Gp', 'F', 'Eo', 'Eg', 'Efw', 'x' , 'y']
             
