@@ -323,7 +323,7 @@ if uploaded:
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
         # Correct HO selection: sort by X ascending
-        reg_data = prod_clean.sort_values("x", ascending=True).iloc[:6]
+        reg_data = prod_clean.sort_values("x", ascending=True)
         # Perform linear regression on correct data
         coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
         Nm = coeffs[0]
