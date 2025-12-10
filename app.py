@@ -301,15 +301,15 @@ if uploaded:
     #calculate deltaP
     Pi = prod["p"].iloc[0]
     prod["dP"] = Pi - prod["p"]
-    prod["Efw"] = ((Cw * Swc) + Cf) / (1 - Swc) * (Pi - prod["p"])
-    prod["Eo"] = prod["Bo"] - Boi + (prod["Rs"] - Rsi) * prod["Bg"]
-    prod["Eg"] = prod["Bg"] - Bgi
-    # --- Compute Rp exactly like Excel ---
+    prod["Efw"] = (Boi*(Cw * Swc) + Cf)(Pi - prod["p"]) / (1 - Swc) 
+    prod["Eo"] = (prod["Bo"] - Boi )+ ((Rsi - prod["Rs"]) * prod["Bg"])
+    prod["Eg"] = Boi*((prod["Bg"]/Bgi)-1)
+    # --- Compute Rp exactly like Excel --- 
     prod["Rp"] = prod["Gp"] / prod["Np"]
     prod["Rp"] = prod["Rp"].replace([np.inf, -np.inf], 0).fillna(0)
 
     # --- Compute F exactly like Excel formula ---
-    prod["F"] = prod["Np"] * ((prod["Bo"] - Boi) +(prod["Gp"] - prod["Np"] * Rsi) * prod["Bg"])
+    prod["F"] = prod["Np"] * (prod["Bo"] + prod["Bg"]*(prod["Rp"] - prod["Rs"]))
 
     # Calculate X and Y for the straight line (Y = N*X + G)
     prod["x"] = (prod["Eg"] + prod["Efw"])/ (prod["Eo"] + prod["Efw"])
