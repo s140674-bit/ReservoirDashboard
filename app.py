@@ -322,11 +322,13 @@ if uploaded:
     
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
-        coeffs = np.polyfit(prod_clean["x"], prod_clean["y"], 1)
-        Nm,N = coeffs[0],coeffs[1] 
+        reg_data = prod_clean.sort_values("p", ascending=False).iloc[:6]
+        coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
+        Nm = coeffs[0]
+        N = coeffs[1]
         m = Nm / N
-        G = N*m*(Boi/Bgi)
-
+        G = N * m * (Boi / Bgi)
+        
         # Calculate R-squared for goodness of fit
         y_fit = Nm * prod_clean["x"] + N
         ss_total = ((prod_clean["y"] - prod_clean["y"].mean()) ** 2).sum()
