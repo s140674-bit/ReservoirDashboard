@@ -315,20 +315,24 @@ if uploaded:
 
     
     # --- Linear Regression (Straight-Line Fit) ---
-    if len(prod_clean) > 1:
-        reg_data = prod_clean.sort_values("p", ascending=False).iloc[:6]
-        coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
-        Nm = coeffs[0] #slope
-        N = coeffs[1] # intercept
-        m = Nm / N
-        G = N*m *(Boi/Bgi)
+   # --- Linear Regression (Straight-Line Fit Using High-Pressure Points Only) ---
+if len(prod_clean) > 1:
 
-        # Calculate R-squared for goodness of fit
-        y_fit = Nm * prod_clean["x"] + N
-        ss_total = ((prod_clean["y"] - prod_clean["y"].mean()) ** 2).sum()
-        ss_residual = ((prod_clean["y"] - y_fit) ** 2).sum()
-        R_squared = 1 - (ss_residual / ss_total)
-        
+    # Select first 5–6 points only (straight-line region)
+    reg_data = prod_clean.sort_values("p", ascending=False).iloc[:6]
+
+    coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
+
+    Nm = coeffs[0]     # slope = N*m
+    N  = coeffs[1]     # intercept = N
+    m  = Nm / N
+    G  = N * m * (Boi / Bgi)
+
+    # Calculate R-squared
+    y_fit = Nm * reg_data["x"] + N
+    ss_total = ((reg_data["y"] - reg_data["y"].mean()) ** 2).sum()
+    ss_residual = ((reg_data["y"] - y_fit) ** 2).sum()
+    R_squared = 1 - ss_residual / ss_total
         
         # --- Display Results in Tabs (Major Improvement for Organization) ---
         st.header("📈 Analysis Results and Visualizations")
