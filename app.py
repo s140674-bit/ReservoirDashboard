@@ -316,7 +316,8 @@ if uploaded:
     
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
-        coeffs = np.polyfit(prod_clean["x"], prod_clean["y"], 1)
+        reg_data = prod_clean.sort_values("p", ascending=False).iloc[:6]
+        coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
         Nm = coeffs[0] #slope
         N = coeffs[1] # intercept
         m = Nm / N
@@ -351,7 +352,7 @@ if uploaded:
 
             st.markdown("---")
             st.subheader("Havlena–Odeh Equation and Fit")
-            st.latex(r'F = N(Eo+Efw+GEg)')
+            st.latex(r"\frac{F}{E_o+E_{fw}} = N + Nm \frac{E_g+E_{fw}}{E_o+E_{fw}}")
             st.markdown(f"""
                 The resulting straight-line fit equation is:
                 $$ Y = ({N:,.2f}) X + ({Nm:,.2f}) $$
@@ -418,7 +419,7 @@ if uploaded:
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
             
-            st.plotly_chart(fig, ues_container_width= True)
+            st.plotly_chart(fig, ues_container_width=True)
 
         # --- Tab 2: Supporting Data Tables ---
         with tab2:
