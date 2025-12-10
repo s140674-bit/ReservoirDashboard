@@ -207,6 +207,7 @@ with col2:
     - **Swc** - Cannot water saturation
     - **Cf** - formation compressibility
     - **Cw** - water comperssibility
+    - **Pi** - initial pressure
     """)
 
 st.markdown("---")
