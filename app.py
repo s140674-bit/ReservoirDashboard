@@ -322,7 +322,9 @@ if uploaded:
     
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
-        reg_data = prod_clean.sort_values("p", ascending=False).iloc[:6]
+        # Correct HO selection: sort by X ascending
+        reg_data = prod_clean.sort_values("x", ascending=True).iloc[:6]
+        # Perform linear regression on correct data
         coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
         Nm = coeffs[0]
         N = coeffs[1]
@@ -424,7 +426,6 @@ if uploaded:
             fig.update_xaxes(title_text=r"(Eg+Ef,w)/(Ef,w+Eo)", row=2, col=1)
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
-            fig.update_xaxes(autorange="reversed", row=1, col=1)
             
             st.plotly_chart(fig, use_container_width=True)
 
