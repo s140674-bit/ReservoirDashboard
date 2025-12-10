@@ -1,4 +1,219 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
+# --- Configuration ---
+st.set_page_config(page_title="Reservoir Dashboard", layout="wide")
+
+# Add custom CSS for theme and smaller unit fonts
+st.markdown("""
+<style>
+    /* Theme Colors: White and #f6bf0c */
+    :root {
+        --primary-color: #f6bf0c;
+        --background-color: #ffffff;
+        --secondary-background: #f8f9fa;
+        --text-color: #262730;
+    }
+    
+    /* Main background */
+    .stApp {
+        background-color: var(--background-color) !important;
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background-color: var(--secondary-background) !important;
+        border-right: 2px solid var(--primary-color) !important;
+    }
+    
+    /* Sidebar header */
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1 {
+        color: var(--primary-color) !important;
+    }
+    
+    /* Main content area */
+    .main .block-container {
+        background-color: var(--background-color) !important;
+        padding-top: 2rem;
+    }
+    
+    /* Headers */
+    h1, h2, h3 {
+        color: var(--text-color) !important;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        background-color: var(--primary-color) !important;
+        color: #000000 !important;
+        border: none !important;
+        border-radius: 5px !important;
+        font-weight: 600 !important;
+    }
+    
+    .stButton > button:hover {
+        background-color: #e0ab0a !important;
+        color: #000000 !important;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background-color: var(--secondary-background) !important;
+        color: var(--text-color) !important;
+        border-radius: 5px 5px 0 0 !important;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: var(--primary-color) !important;
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Metrics */
+    [data-testid="stMetric"] {
+        background-color: var(--secondary-background) !important;
+        padding: 1rem !important;
+        border-radius: 8px !important;
+        border-left: 4px solid var(--primary-color) !important;
+    }
+    
+    /* Make metric values smaller - this affects both numbers and units */
+    [data-testid="stMetricValue"] {
+        font-size: 1.1rem !important;
+        line-height: 1.2 !important;
+        color: var(--text-color) !important;
+    }
+    
+    /* Make metric labels smaller */
+    [data-testid="stMetricLabel"] {
+        font-size: 0.875rem !important;
+        color: var(--text-color) !important;
+    }
+    
+    /* Additional styling for metric delta (if any) */
+    [data-testid="stMetricDelta"] {
+        font-size: 0.75rem !important;
+    }
+    
+    /* Target sidebar metrics specifically for smaller units */
+    .sidebar [data-testid="stMetricValue"] {
+        font-size: 1rem !important;
+    }
+    
+    /* File uploader */
+    [data-testid="stFileUploader"] {
+        background-color: var(--secondary-background) !important;
+        border: 2px dashed var(--primary-color) !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Expander */
+    [data-testid="stExpander"] {
+        background-color: var(--secondary-background) !important;
+        border: 1px solid var(--primary-color) !important;
+        border-radius: 5px !important;
+    }
+    
+    [data-testid="stExpander"] summary {
+        color: var(--primary-color) !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Dataframes */
+    [data-testid="stDataFrame"] {
+        background-color: var(--background-color) !important;
+    }
+    
+    /* Info/Warning/Error boxes */
+    .stAlert {
+        border-left: 4px solid var(--primary-color) !important;
+    }
+    
+    /* Markdown text */
+    .stMarkdown {
+        color: var(--text-color) !important;
+    }
+    
+    /* Horizontal rule */
+    hr {
+        border-color: var(--primary-color) !important;
+        opacity: 0.3;
+    }
+    
+    /* Selectbox and other inputs */
+    [data-baseweb="select"] {
+        border-color: var(--primary-color) !important;
+    }
+    
+    /* Focus states */
+    *:focus {
+        outline-color: var(--primary-color) !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Enhanced Title/Header
+st.sidebar.title("🛢 Havlena–Odeh Analysis") 
+st.sidebar.markdown("---")
+st.title("Reservoir Material Balance Dashboard")
+st.markdown("""
+This dashboard is an interactive analytical tool designed to perform Havlena-Odeh material balance calculations for reservoir engineering applications.
+""")
+
+st.markdown("---")
+
+st.subheader("📊 What This Dashboard Provides")
+st.markdown("""
+Provides estimations of:
+- **Original oil in place**
+- **Gas cap in place**
+- **Gas cap ratio**
+""")
+
+st.markdown("---")
+
+st.subheader("📥 Input Requirements")
+st.markdown("""
+Upload an Excel file (.xlsx) containing **2 sheets**.
+""")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+    #### Sheet 1: **"Production"** (Required Columns)
+    - **Bo** - Oil FVF
+    - **Bg** - Gas FVF
+    - **Rs** - Solution GOR
+    - **Np** - Cumulative oil production
+    - **Gp** - Cumulative gas production
+    - **p** - Reservoir pressure
+    """)
+
+with col2:
+    st.markdown("""
+    #### Sheet 2: **"Initial"** (Required Parameters)
+    - **Boi** - Initial oil FVF
+    - **Bgi** - Initial gas FVF
+    - **Rsi** - Initial solution GOR
+    """)
+
+st.markdown("---")
+
+st.info("""
+**Note:** 
+- Accuracy depends on PVT and production data quality.
+- The assigned sheets structure **MUST** be followed specifically, including capital and small letters such as **p** in production sheet, to avoid errors.
+""")
+
+st.markdown("---")
 
 
 # --- Sidebar for Input and Guide ---
@@ -202,3 +417,4 @@ if uploaded:
 
 else:
     st.info("Upload an Excel file to start the Havlena-Odeh analysis.")
+
