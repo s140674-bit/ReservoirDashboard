@@ -371,7 +371,7 @@ if uploaded:
                                 row_heights=[0.8, 0.2], 
                                 shared_xaxes=True, 
                                 vertical_spacing=0.1,
-                                subplot_titles=(r'Main Plot: F/(Ef,w+Eo) vs (Eg+Ef,w)/(Ef,w+Eo),
+                                subplot_titles=(r'Main Plot: F/(Ef,w+Eo) vs (Eg+Ef,w)/(Ef,w+Eo),'
                                         'Residuals Analysis'))
                                 
             # 1. Main Plot
