@@ -301,7 +301,7 @@ if uploaded:
     Cf = float(init.get("Cf", 0))
     #calculate deltaP
     Pi = prod["p"].iloc[0]
-    prod["dP"] = Pi - prod["p"]
+    prod["dP"] = prod["p"] - Pi
     prod["Efw"] = Boi * ((Cw * Swc) + Cf) * prod["dP"] / (1.0 - Swc)
     prod["Eo"] = (prod["Bo"] - Boi )+ ((Rsi - prod["Rs"]) * prod["Bg"])
     prod["Eg"] = Boi*((prod["Bg"]/Bgi)-1)
@@ -419,7 +419,7 @@ if uploaded:
             
             # Labeling the residuals plot axes
             fig.update_yaxes(title_text="Residuals", row=2, col=1)
-            fig.update_xaxes(title_text=r"(Eg+Ef,w)/(Ef,w+Eo)$ (X-Axis)", row=2, col=1)
+            fig.update_xaxes(title_text=r"(Eg+Ef,w)/(Ef,w+Eo)", row=2, col=1)
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
             
