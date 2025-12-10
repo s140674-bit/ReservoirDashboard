@@ -423,7 +423,7 @@ if len(prod_clean) > 1:
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
             
-            st.plotly_chart(fig, ues_container_width=True)
+            st.plotly_chart(fig, use_container_width=True)
 
         # --- Tab 2: Supporting Data Tables ---
         with tab2:
