@@ -320,7 +320,7 @@ if uploaded:
         Nm = coeffs[0] #slope
         N = coeffs[1] # intercept
         m = Nm / N
-        G = N*m
+        G = N*m *(Boi/Bgi)
 
         # Calculate R-squared for goodness of fit
         y_fit = Nm * prod_clean["x"] + N
@@ -360,7 +360,7 @@ if uploaded:
 
         # --- Tab 1: Interactive Plot with Residuals (Custom Colors/Shapes/Hover Data) ---
         with tab1:
-            st.subheader(r"Havlena–Odeh Straight-Line Plot  $\frac{F}{E_{fw}+E_o}$ vs $\frac{E_g+E_{fw}}{E_{fw}+E_o}$")
+            st.subheader("Havlena–Odeh Straight-Line Plot (F / (Eo + Efw) vs (Eg + Efw) / (Eo + Efw))")
             
             fig = make_subplots(rows=2, cols=1, 
                                 row_heights=[0.8, 0.2], 
@@ -397,7 +397,7 @@ if uploaded:
                 row=1, col=1)
             
             # Labeling the main plot axes
-            fig.update_yaxes(title_text=r"$\frac{F}{E_{fw}+E_o}$", row=1, col=1)
+            fig.update_yaxes(title_text=r"$\frac{F}{E_o + E_{fw}}$", row=1, col=1)
             fig.update_xaxes(showticklabels=False, row=1, col=1) 
 
             # 2. Residuals Plot (Custom Coloring based on sign)
@@ -414,7 +414,7 @@ if uploaded:
             
             # Labeling the residuals plot axes
             fig.update_yaxes(title_text="Residuals", row=2, col=1)
-            fig.update_xaxes(title_text=r"$\frac{E_g+E_{fw}}{E_{fw}+E_o}$ (X-Axis)", row=2, col=1)
+            fig.update_xaxes(title_text=r"$\frac{E_g + E_{fw}}{E_o + E_{fw}}$ (X-Axis)", row=2, col=1)
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
             
