@@ -322,8 +322,7 @@ if uploaded:
     
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
-        # Remove first 2 unstable points
-        reg_data = prod_clean.sort_values("x", ascending=True).iloc[2:]
+        reg_data = prod_clean.sort_values("x", ascending=True).iloc[:6]
         # Perform linear regression on correct data
         coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
         Nm = coeffs[0]
