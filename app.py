@@ -195,6 +195,9 @@ with col1:
     - **Np** - Cumulative oil production
     - **Gp** - Cumulative gas production
     - **p** - Reservoir pressure
+    - **Swc** - Cannot water saturation
+    - **Cf** - formation compressibility
+    - **Cw** - water comperssibility
     """)
 
 with col2:
@@ -254,10 +257,16 @@ if uploaded:
         Boi = pd.to_numeric(init["Boi"], errors='coerce')
         Bgi = pd.to_numeric(init["Bgi"], errors='coerce')
         Rsi = pd.to_numeric(init["Rsi"], errors='coerce')
+        Cw = pd.to_numeric(init["Cw"], errors='coerce')
+        Cf = pd.to_numeric(init["Cf"], errors='coerce')
+        Swc = pd.to_numeric(init["Swc"], errors='coerce')
         
         # Check if conversion was successful
         if pd.isna(Boi) or pd.isna(Bgi) or pd.isna(Rsi):
             st.error("Error: Initial parameters (Boi, Bgi, Rsi) must be numeric values.")
+            st.stop()
+        if pd.isna(Cw) or pd.isna(Cf) or pd.isna(Swc):
+            st.error("Error: Initial parameters (Cw, Cf, Swc) must be numeric values.")
             st.stop()
 
     except Exception as e:
@@ -282,14 +291,24 @@ if uploaded:
     st.sidebar.markdown("---")
 
 
-    # --- Material Balance Calculations (F = N * Eo + G * Eg) ---
+    # --- Material Balance Calculations (F = N * Eo + G * Eg +Efw) ---
+    # ---Water & formation compressibilityterm(Efw)---
+    #load extra parameters
+    Swc = float(init.get("Swc", 0))
+    Cw = float(init.get("Cw", 0))
+    Cf = float(init.get("Cf", 0))
+    #calculate deltaP
+    Pi = prod["P"].iloc[0]
+    prod["dP"] = Pi - prod["p"]
+    prod["Efw"] = ((Cw * Swc)+ Cf) / (1- Swc) * (prod["p"].iloc[0] - (prod["p"])
     prod["Eo"] = prod["Bo"] - Boi + (prod["Rs"] - Rsi) * prod["Bg"]
     prod["Eg"] = prod["Bg"] - Bgi
+    prod["E_total"] = ( prod["Eo"] + (m+ 1.0) * prod["Eo"] + m * prod["Eg"])
     prod["F"]  = prod["Np"] * (prod["Bo"] - Boi) + (prod["Gp"] - prod["Np"] * Rsi) * prod["Bg"]
 
     # Calculate X and Y for the straight line (Y = N*X + G)
-    prod["x"] = prod["Eo"] / prod["Eg"]
-    prod["y"] = prod["F"] / prod["Eg"]
+    prod["x"] = 1/prod["E_total"]
+    prod["y"] = prod["F"] / prod["E_total"]
 
     # Handle division by zero/inf values
     prod_clean = prod.replace([np.inf, -np.inf], np.nan).dropna()
