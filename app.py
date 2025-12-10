@@ -195,9 +195,7 @@ with col1:
     - **Np** - Cumulative oil production
     - **Gp** - Cumulative gas production
     - **p** - Reservoir pressure
-    - **Swc** - Cannot water saturation
-    - **Cf** - formation compressibility
-    - **Cw** - water comperssibility
+
     """)
 
 with col2:
@@ -206,6 +204,9 @@ with col2:
     - **Boi** - Initial oil FVF
     - **Bgi** - Initial gas FVF
     - **Rsi** - Initial solution GOR
+    - **Swc** - Cannot water saturation
+    - **Cf** - formation compressibility
+    - **Cw** - water comperssibility
     """)
 
 st.markdown("---")
