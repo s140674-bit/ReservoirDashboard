@@ -303,12 +303,11 @@ if uploaded:
     prod["Efw"] = ((Cw * Swc)+ Cf) / (1- Swc) * (prod["p"].iloc[0] - (prod["p"]))
     prod["Eo"] = prod["Bo"] - Boi + (prod["Rs"] - Rsi) * prod["Bg"]
     prod["Eg"] = prod["Bg"] - Bgi
-    prod["E_total"] = ( prod["Eo"] + (m+ 1.0) * prod["Efw"] + m * prod["Eg"])
     prod["F"]  = prod["Np"] * (prod["Bo"] - Boi) + (prod["Gp"] - prod["Np"] * Rsi) * prod["Bg"]
 
     # Calculate X and Y for the straight line (Y = N*X + G)
-    prod["x"] = 1/prod["E_total"]
-    prod["y"] = prod["F"] / prod["E_total"]
+    prod["x"] = (prod["Eg"] + prod["Efw"])/ (prod["Eo"] + prod["Efw"])
+    prod["y"] = prod["F"] / (prod["Eo"] + prod["Efw"])
 
     # Handle division by zero/inf values
     prod_clean = prod.replace([np.inf, -np.inf], np.nan).dropna()
@@ -317,11 +316,13 @@ if uploaded:
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
         coeffs = np.polyfit(prod_clean["x"], prod_clean["y"], 1)
-        N, G = coeffs[0], coeffs[1]
-        m = (G * Bgi) / (N * Boi)
+        Nm = coeffs[0] #slope
+        N = coeffs[1] # intercept
+        m = Nm / N
+        G = N*m
 
         # Calculate R-squared for goodness of fit
-        y_fit = N * prod_clean["x"] + G
+        y_fit = Nm * prod_clean["x"] + N
         ss_total = ((prod_clean["y"] - prod_clean["y"].mean()) ** 2).sum()
         ss_residual = ((prod_clean["y"] - y_fit) ** 2).sum()
         R_squared = 1 - (ss_residual / ss_total)
