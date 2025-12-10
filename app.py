@@ -359,7 +359,7 @@ if uploaded:
             st.latex(r'F = N(Eo+Efw+GEg)')
             st.markdown(f"""
                 The resulting straight-line fit equation is:
-                $$ Y = ({N:,.2f}) X + ({Nm:,.2f}) $$
+                $$ Y = ({Nm:,.2f}) X + ({N:,.2f}) $$
             """)
 
 
