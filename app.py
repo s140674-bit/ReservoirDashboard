@@ -301,7 +301,8 @@ if uploaded:
     Cf = float(init.get("Cf", 0))
     #calculate deltaP
     Pi = prod["p"].iloc[0]
-    prod["Efw"] = Boi * ((Cw * Swc) + Cf) * (Pi - prod["p"]) / (1 - Swc)
+    prod["dP"] = Pi - prod["p"]
+    prod["Efw"] = Boi * ((Cw * Swc) + Cf) * prod["dP"] / (1.0 - Swc)
     prod["Eo"] = (prod["Bo"] - Boi )+ ((Rsi - prod["Rs"]) * prod["Bg"])
     prod["Eg"] = Boi*((prod["Bg"]/Bgi)-1)
     # --- Compute Rp exactly like Excel --- 
@@ -364,13 +365,13 @@ if uploaded:
 
         # --- Tab 1: Interactive Plot with Residuals (Custom Colors/Shapes/Hover Data) ---
         with tab1:
-            st.subheader(r"Havlena–Odeh Straight-Line Plot  $\frac{F}{E_{fw}+E_o}$ vs $\frac{E_g+E_{fw}}{E_{fw}+E_o}$")
+            st.subheader(r"Havlena–Odeh Straight-Line Plot F/(Ef,w+Eo) vs (Eg+Ef,w)/(Ef,w+Eo)")
             
             fig = make_subplots(rows=2, cols=1, 
                                 row_heights=[0.8, 0.2], 
                                 shared_xaxes=True, 
                                 vertical_spacing=0.1,
-                                subplot_titles=(r'Main Plot: $\frac{F}{E_{fw}+E_o}$ vs $\frac{E_g+E_{fw}}{E_{fw}+E_o}$',
+                                subplot_titles=(r'Main Plot: F/(Ef,w+Eo) vs (Eg+Ef,w)/(Ef,w+Eo),
                                         'Residuals Analysis'))
                                 
             # 1. Main Plot
@@ -401,7 +402,7 @@ if uploaded:
                 row=1, col=1)
             
             # Labeling the main plot axes
-            fig.update_yaxes(title_text=r"$\frac{F}{E_{fw}+E_o}$", row=1, col=1)
+            fig.update_yaxes(title_text=r"F/(Ef,w+Eo)", row=1, col=1)
             fig.update_xaxes(showticklabels=False, row=1, col=1) 
 
             # 2. Residuals Plot (Custom Coloring based on sign)
@@ -418,7 +419,7 @@ if uploaded:
             
             # Labeling the residuals plot axes
             fig.update_yaxes(title_text="Residuals", row=2, col=1)
-            fig.update_xaxes(title_text=r"$\frac{E_g+E_{fw}}{E_{fw}+E_o}$ (X-Axis)", row=2, col=1)
+            fig.update_xaxes(title_text=r"(Eg+Ef,w)/(Ef,w+Eo)$ (X-Axis)", row=2, col=1)
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
             
