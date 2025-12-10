@@ -195,8 +195,8 @@ with col1:
     - **Np** - Cumulative oil production
     - **Gp** - Cumulative gas production
     - **p** - Reservoir pressure
-
-    """)
+        """)
+    
 
 with col2:
     st.markdown("""
@@ -315,32 +315,27 @@ if uploaded:
 
     
     # --- Linear Regression (Straight-Line Fit) ---
-   # --- Linear Regression (Straight-Line Fit Using High-Pressure Points Only) ---
-if len(prod_clean) > 1:
+    if len(prod_clean) > 1:
+        coeffs = np.polyfit(prod_clean["x"], prod_clean["y"], 1)
+        Nm = coeffs[0] #slope
+        N = coeffs[1] # intercept
+        m = Nm / N
+        G = N*m
 
-    # Select first 5–6 points only (straight-line region)
-    reg_data = prod_clean.sort_values("p", ascending=False).iloc[:6]
-
-    coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
-
-    Nm = coeffs[0]     # slope = N*m
-    N  = coeffs[1]     # intercept = N
-    m  = Nm / N
-    G  = N * m * (Boi / Bgi)
-
-    # Calculate R-squared
-    y_fit = Nm * reg_data["x"] + N
-    ss_total = ((reg_data["y"] - reg_data["y"].mean()) ** 2).sum()
-    ss_residual = ((reg_data["y"] - y_fit) ** 2).sum()
-    R_squared = 1 - ss_residual / ss_total
+        # Calculate R-squared for goodness of fit
+        y_fit = Nm * prod_clean["x"] + N
+        ss_total = ((prod_clean["y"] - prod_clean["y"].mean()) ** 2).sum()
+        ss_residual = ((prod_clean["y"] - y_fit) ** 2).sum()
+        R_squared = 1 - (ss_residual / ss_total)
         
-     # --- Display Results in Tabs (Major Improvement for Organization) ---
-    st.header("📈 Analysis Results and Visualizations")
-    tab1, tab2, tab3 = st.tabs(["📊 Regression Plot", "📚 Supporting Data", "📝 Equations & Metrics"])
+        
+        # --- Display Results in Tabs (Major Improvement for Organization) ---
+        st.header("📈 Analysis Results and Visualizations")
+        tab1, tab2, tab3 = st.tabs(["📊 Regression Plot", "📚 Supporting Data", "📝 Equations & Metrics"])
 
 
         # --- Tab 3: Equations & Metrics ---
-    with tab3:
+        with tab3:
             st.subheader("Final Calculated Parameters")
             # Use columns for a neat presentation of metrics
             col_N, col_G, col_m, col_R2 = st.columns(4)
@@ -356,7 +351,7 @@ if len(prod_clean) > 1:
 
             st.markdown("---")
             st.subheader("Havlena–Odeh Equation and Fit")
-            st.latex(r"\frac{F}{E_o+E_{fw}} = N + Nm \frac{E_g+E_{fw}}{E_o+E_{fw}}")
+            st.latex(r'F = N(Eo+Efw+GEg')
             st.markdown(f"""
                 The resulting straight-line fit equation is:
                 $$ Y = ({N:,.2f}) X + ({Nm:,.2f}) $$
@@ -364,8 +359,8 @@ if len(prod_clean) > 1:
 
 
         # --- Tab 1: Interactive Plot with Residuals (Custom Colors/Shapes/Hover Data) ---
-    with tab1:
-            st.subheader("Havlena–Odeh Straight-Line Plot (F / (Eo + Efw) vs (Eg + Efw) / (Eo + Efw))")
+        with tab1:
+            st.subheader(r"Havlena–Odeh Straight-Line Plot  $\frac{F}{E_{fw}+E_o}$ vs $\frac{E_g+E_{fw}}{E_{fw}+E_o}$")
             
             fig = make_subplots(rows=2, cols=1, 
                                 row_heights=[0.8, 0.2], 
@@ -402,7 +397,7 @@ if len(prod_clean) > 1:
                 row=1, col=1)
             
             # Labeling the main plot axes
-            fig.update_yaxes(title_text=r"$\frac{F}{E_o + E_{fw}}$", row=1, col=1)
+            fig.update_yaxes(title_text=r"$\frac{F}{E_{fw}+E_o}$", row=1, col=1)
             fig.update_xaxes(showticklabels=False, row=1, col=1) 
 
             # 2. Residuals Plot (Custom Coloring based on sign)
@@ -419,14 +414,14 @@ if len(prod_clean) > 1:
             
             # Labeling the residuals plot axes
             fig.update_yaxes(title_text="Residuals", row=2, col=1)
-            fig.update_xaxes(title_text=r"$\frac{E_g + E_{fw}}{E_o + E_{fw}}$ (X-Axis)", row=2, col=1)
+            fig.update_xaxes(title_text=r"$\frac{E_g+E_{fw}}{E_{fw}+E_o}$ (X-Axis)", row=2, col=1)
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
             
             st.plotly_chart(fig, use_container_width=True)
 
         # --- Tab 2: Supporting Data Tables ---
-     with tab2:
+        with tab2:
             st.subheader("Calculated Variables ($F, E_o, E_g, E_{fw}$) and Plot Data ($X, Y$)")
             display_cols = ['p', 'Np', 'Gp', 'F', 'Eo', 'Eg', 'Efw', 'x' , 'y']
             
