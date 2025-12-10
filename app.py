@@ -325,7 +325,7 @@ if uploaded:
         coeffs = np.polyfit(prod_clean["x"], prod_clean["y"], 1)
         Nm,N = coeffs[0],coeffs[1] 
         m = Nm / N
-        G = N*m
+        G = N*m*(Boi/Bgi)
 
         # Calculate R-squared for goodness of fit
         y_fit = Nm * prod_clean["x"] + N
