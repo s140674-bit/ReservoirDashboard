@@ -427,7 +427,7 @@ if uploaded:
         # --- Tab 2: Supporting Data Tables ---
         with tab2:
             st.subheader("Calculated Variables ($F, E_o, E_g, E_{fw}$) and Plot Data ($X, Y$)")
-            display_cols = ['p', 'Np', 'Gp','Rp' 'F', 'Eo', 'Eg', 'Efw', 'x' , 'y']
+            display_cols = ['p', 'Np', 'Gp','Rp', 'F', 'Eo', 'Eg', 'Efw', 'x' , 'y']
             
             # Use prod_clean for display
             if not prod_clean.empty:
