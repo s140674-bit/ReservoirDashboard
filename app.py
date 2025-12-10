@@ -424,7 +424,8 @@ if uploaded:
             fig.update_xaxes(title_text=r"(Eg+Ef,w)/(Ef,w+Eo)", row=2, col=1)
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
-            
+            fig.update_xaxes(autorange="reversed", row=1, col=1)
+            fig.update_xaxes(autorange="reversed", row=2, col=1)
             st.plotly_chart(fig, use_container_width=True)
 
         # --- Tab 2: Supporting Data Tables ---
