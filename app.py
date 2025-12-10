@@ -334,9 +334,9 @@ if len(prod_clean) > 1:
     ss_residual = ((reg_data["y"] - y_fit) ** 2).sum()
     R_squared = 1 - ss_residual / ss_total
         
-        # --- Display Results in Tabs (Major Improvement for Organization) ---
-        st.header("📈 Analysis Results and Visualizations")
-        tab1, tab2, tab3 = st.tabs(["📊 Regression Plot", "📚 Supporting Data", "📝 Equations & Metrics"])
+     # --- Display Results in Tabs (Major Improvement for Organization) ---
+    st.header("📈 Analysis Results and Visualizations")
+    tab1, tab2, tab3 = st.tabs(["📊 Regression Plot", "📚 Supporting Data", "📝 Equations & Metrics"])
 
 
         # --- Tab 3: Equations & Metrics ---
