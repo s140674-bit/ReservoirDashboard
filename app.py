@@ -301,7 +301,7 @@ if uploaded:
     #calculate deltaP
     Pi = prod["p"].iloc[0]
     prod["dP"] = Pi - prod["p"]
-    prod["Efw"] = (Boi*(Cw * Swc) + Cf)(Pi - prod["p"]) / (1 - Swc) 
+    prod["Efw"] = (Boi*(Cw * Swc) + Cf)(prod["dp"]) / (1 - Swc) 
     prod["Eo"] = (prod["Bo"] - Boi )+ ((Rsi - prod["Rs"]) * prod["Bg"])
     prod["Eg"] = Boi*((prod["Bg"]/Bgi)-1)
     # --- Compute Rp exactly like Excel --- 
