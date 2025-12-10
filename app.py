@@ -303,7 +303,7 @@ if uploaded:
     prod["Efw"] = ((Cw * Swc)+ Cf) / (1- Swc) * (prod["p"].iloc[0] - (prod["p"]))
     prod["Eo"] = prod["Bo"] - Boi + (prod["Rs"] - Rsi) * prod["Bg"]
     prod["Eg"] = prod["Bg"] - Bgi
-    prod["E_total"] = ( prod["Eo"] + (m+ 1.0) * prod["Eo"] + m * prod["Eg"])
+    prod["E_total"] = ( prod["Eo"] + (m+ 1.0) * prod["Efw"] + m * prod["Eg"])
     prod["F"]  = prod["Np"] * (prod["Bo"] - Boi) + (prod["Gp"] - prod["Np"] * Rsi) * prod["Bg"]
 
     # Calculate X and Y for the straight line (Y = N*X + G)
