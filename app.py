@@ -214,7 +214,7 @@ st.markdown("---")
 
 st.info("""
 **Note:** 
-- Accuracy depends on PVT and production data quality.
+- Accuracy depends on PVT and production data quality, some values may appear with an error due to the unaccounted water influx in this model.
 - The assigned sheets structure **MUST** be followed specifically, including capital and small letters such as **p** in production sheet, to avoid errors.
 """)
 
