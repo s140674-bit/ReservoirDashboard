@@ -359,13 +359,14 @@ if uploaded:
 
         # --- Tab 1: Interactive Plot with Residuals (Custom Colors/Shapes/Hover Data) ---
         with tab1:
-            st.subheader(r"Havlena–Odeh Straight-Line Plot $\frac{F}{(Eo+Ef,w)}$ vs ${(Eg+Ef,w)}{(Eo+Ef,w)}")
+            st.subheader(r"Havlena–Odeh Straight-Line Plot  $\frac{F}{E_{fw}+E_o}$ vs $\frac{E_g+E_{fw}}{E_{fw}+E_o}$")
             
             fig = make_subplots(rows=2, cols=1, 
                                 row_heights=[0.8, 0.2], 
                                 shared_xaxes=True, 
                                 vertical_spacing=0.1,
-                                subplot_titles = r'Main Plot: $\frac{F}{(Eo+Ef,w)}$ vs ${(Eg+Ef,w)}{(Eo+Ef,w)}', 'Residuals Analysis'))
+                                subplot_titles=(r'Main Plot: $\frac{F}{E_{fw}+E_o}$ vs $\frac{E_g+E_{fw}}{E_{fw}+E_o}$',
+                                        'Residuals Analysis'))
                                 
             # 1. Main Plot
             fig.add_trace(go.Scatter(
@@ -395,7 +396,7 @@ if uploaded:
                 row=1, col=1)
             
             # Labeling the main plot axes
-            fig.update_yaxes(title_text=r"$\frac{F}{E{fw}+Eo}$", row=1, col=1)
+            fig.update_yaxes(title_text=r"$\frac{F}{E_{fw}+E_o}$", row=1, col=1)
             fig.update_xaxes(showticklabels=False, row=1, col=1) 
 
             # 2. Residuals Plot (Custom Coloring based on sign)
@@ -412,16 +413,16 @@ if uploaded:
             
             # Labeling the residuals plot axes
             fig.update_yaxes(title_text="Residuals", row=2, col=1)
-            fig.update_xaxes(title_text=r"$\frac{Eg+Efw}{Efw+Eo}$ (X-Axis)", row=2, col=1)
+            fig.update_xaxes(title_text=r"$\frac{E_g+E_{fw}}{E_{fw}+E_o}$ (X-Axis)", row=2, col=1)
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
             
-            st.plotly_chart(fig, use_container_width='stretch')
+            st.plotly_chart(fig, ues_container_width= True)
 
         # --- Tab 2: Supporting Data Tables ---
         with tab2:
-            st.subheader("Calculated Variables ($F, E_o, E_g$) and Plot Data ($X, Y$)")
-            display_cols = ['p', 'Np', 'Gp', 'F', 'Eo', 'Eg', 'x', 'y']
+            st.subheader("Calculated Variables ($F, E_o, E_g, E_{fw}$) and Plot Data ($X, Y$)")
+            display_cols = ['p', 'Np', 'Gp', 'F', 'Eo', 'Eg', 'Efw', 'x' , 'y']
             
             # Use prod_clean for display
             if not prod_clean.empty:
