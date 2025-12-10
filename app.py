@@ -1,20 +1,3 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-
-# --- Configuration ---
-st.set_page_config(page_title="Reservoir Dashboard", layout="wide")
-
-# Enhanced Title/Header
-st.sidebar.title("🛢 Havlena–Odeh Analysis") 
-st.sidebar.markdown("---")
-st.title("Reservoir Material Balance Dashboard")
-st.markdown("""
-    This application calculates the **Original Oil in Place (N)**, **Initial Gas-Cap Gas in Place (G)**,
-    and the **Gas-Cap Ratio (m)** for a gas-cap oil reservoir using the **Havlena–Odeh Material Balance Method**.
-""")
 st.markdown("---")
 
 
@@ -43,13 +26,24 @@ if uploaded:
         prod.columns = prod.columns.str.strip() 
         # 2. Drop columns that are entirely NaN (e.g., blank columns)
         prod = prod.dropna(axis=1, how='all')
+        # 3. Convert numeric columns to numeric types (handles string values)
+        numeric_cols = ["p", "Np", "Gp", "Bo", "Bg", "Rs"]
+        for col in numeric_cols:
+            if col in prod.columns:
+                prod[col] = pd.to_numeric(prod[col], errors='coerce')
         # -----------------------------------------------------------------------
 
         init = pd.Series(init_df["Value"].values, index=init_df["Parameter"].values)
         
-        Boi = init["Boi"]
-        Bgi = init["Bgi"]
-        Rsi = init["Rsi"]
+        # Convert initial parameters to numeric
+        Boi = pd.to_numeric(init["Boi"], errors='coerce')
+        Bgi = pd.to_numeric(init["Bgi"], errors='coerce')
+        Rsi = pd.to_numeric(init["Rsi"], errors='coerce')
+        
+        # Check if conversion was successful
+        if pd.isna(Boi) or pd.isna(Bgi) or pd.isna(Rsi):
+            st.error("Error: Initial parameters (Boi, Bgi, Rsi) must be numeric values.")
+            st.stop()
 
     except Exception as e:
         st.error(f"Error loading data. Check your sheet names ('Production', 'Initial') or Initial parameters ('Boi', 'Bgi', 'Rsi'). Details: {e}")
@@ -115,7 +109,7 @@ if uploaded:
             with col_G:
                 st.metric("Gas in Place (G)", f"{G:,.2f} MMMSCF")
             with col_m:
-                st.metric("Gas Cap Ratio (m)", f"{m:.4f} (fraction)")
+                st.metric("Gas Cap Ratio (m)", f"{m:.4f}")
             with col_R2:
                 st.metric("Goodness of Fit ($R^2$)", f"{R_squared:.4f}")
 
@@ -187,7 +181,7 @@ if uploaded:
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 
         # --- Tab 2: Supporting Data Tables ---
         with tab2:
