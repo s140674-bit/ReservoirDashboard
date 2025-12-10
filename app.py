@@ -322,8 +322,7 @@ if uploaded:
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
         coeffs = np.polyfit(prod_clean["x"], prod_clean["y"], 1)
-        N*m == coeffs[0] #slope
-        N = coeffs[1] # intercept
+        Nm,N = coeffs[0],coeffs[1] 
         m = Nm / N
         G = N*m
 
