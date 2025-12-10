@@ -300,7 +300,7 @@ if uploaded:
     Cw = float(init.get("Cw", 0))
     Cf = float(init.get("Cf", 0))
     #calculate deltaP
-    
+    Pi = prod["p"].iloc[0]
     prod["Efw"] = (Boi*(Cw * Swc) + Cf)(Pi - prod["p"]) / (1 - Swc) 
     prod["Eo"] = (prod["Bo"] - Boi )+ ((Rsi - prod["Rs"]) * prod["Bg"])
     prod["Eg"] = Boi*((prod["Bg"]/Bgi)-1)
