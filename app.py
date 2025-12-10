@@ -350,23 +350,23 @@ if uploaded:
 
             st.markdown("---")
             st.subheader("Havlena–Odeh Equation and Fit")
-            st.latex(r'F = N E_o + G E_g \quad \Rightarrow \quad \frac{F}{E_g} = N \frac{E_o}{E_g} + G')
+            st.latex(r'F = N(Eo+Efw+GEg')
             st.markdown(f"""
                 The resulting straight-line fit equation is:
-                $$ Y = ({N:,.2f}) X + ({G:,.2f}) $$
+                $$ Y = ({N:,.2f}) X + ({Nm:,.2f}) $$
             """)
 
 
         # --- Tab 1: Interactive Plot with Residuals (Custom Colors/Shapes/Hover Data) ---
         with tab1:
-            st.subheader("Havlena–Odeh Straight-Line Plot (F/Eg vs Eo/Eg)")
+            st.subheader(r"Havlena–Odeh Straight-Line Plot $\frac{F}{(Eo+Ef,w)}$ vs ${(Eg+Ef,w)}{(Eo+Ef,w)}")
             
             fig = make_subplots(rows=2, cols=1, 
                                 row_heights=[0.8, 0.2], 
                                 shared_xaxes=True, 
                                 vertical_spacing=0.1,
-                                subplot_titles=(r'Main Plot: $\frac{F}{E_g}$ vs $\frac{E_o}{E_g}$', 'Residuals Analysis'))
-
+                                subplot_titles = r'Main Plot: $\frac{F}{(Eo+Ef,w)}$ vs ${(Eg+Ef,w)}{(Eo+Ef,w)}', 'Residuals Analysis'))
+                                
             # 1. Main Plot
             fig.add_trace(go.Scatter(
                 x=prod_clean["x"], 
@@ -395,7 +395,7 @@ if uploaded:
                 row=1, col=1)
             
             # Labeling the main plot axes
-            fig.update_yaxes(title_text=r"$\frac{F}{E_g}$", row=1, col=1)
+            fig.update_yaxes(title_text=r"$\frac{F}{E{fw}+Eo}$", row=1, col=1)
             fig.update_xaxes(showticklabels=False, row=1, col=1) 
 
             # 2. Residuals Plot (Custom Coloring based on sign)
@@ -412,11 +412,11 @@ if uploaded:
             
             # Labeling the residuals plot axes
             fig.update_yaxes(title_text="Residuals", row=2, col=1)
-            fig.update_xaxes(title_text=r"$\frac{E_o}{E_g}$ (X-Axis)", row=2, col=1)
+            fig.update_xaxes(title_text=r"$\frac{Eg+Efw}{Efw+Eo}$ (X-Axis)", row=2, col=1)
             
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
             
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width='stretch')
 
         # --- Tab 2: Supporting Data Tables ---
         with tab2:
