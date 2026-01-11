@@ -254,22 +254,31 @@ if uploaded:
         # -----------------------------------------------------------------------
 
       # Make parameters case-insensitive and strip spaces
-    init = pd.Series(
-    init_df["Value"].values,
-    index=init_df["Parameter"].str.strip().str.lower())
+        # --- Load Initial Sheet (case-proof) ---
+init_df.columns = init_df.columns.str.strip()
 
-    def to_float(x):
-        if isinstance(x, str):
-            x = x.replace("−", "-")
-        return float(x)
+# Make parameters case-insensitive
+parameters = init_df["Parameter"].str.strip().str.lower()
+values = init_df["Value"]
 
-    Boi = to_float(init["boi"])
-    Bgi = to_float(init["bgi"])
-    Rsi = to_float(init["rsi"])
-    Pi  = to_float(init.get("pi", prod["p"].iloc[0])) 
-    Swc = to_float(init["swc"])
-    Cf  = to_float(init["cf"])
-    Cw  = to_float(init["cw"])
+init = pd.Series(values.values, index=parameters.values)
+
+def to_float(x):
+    if isinstance(x, str):
+        x = x.replace("−", "-")
+    return float(x)
+
+# Required initial parameters
+Boi = to_float(init["boi"])
+Bgi = to_float(init["bgi"])
+Rsi = to_float(init["rsi"])
+Pi  = to_float(init.get("pi", prod["p"].iloc[0]))
+
+# Optional but required for Efw
+Swc = to_float(init["swc"])
+Cf  = to_float(init["cf"])
+Cw  = to_float(init["cw"])
+   
         # Check if conversion was successful
         if pd.isna(Boi) or pd.isna(Bgi) or pd.isna(Rsi):
             st.error("Error: Initial parameters (Boi, Bgi, Rsi) must be numeric values.")
@@ -302,35 +311,32 @@ if uploaded:
 
     # --- Material Balance Calculations (Havlena–Odeh) ---
 
-    # ΔP = Pi - P  (pressure drop يكون موجب لما الضغط ينقص)
-    prod["dP"] = Pi - prod["p"]
+   # --- Material Balance Calculations (Corrected) ---
 
-    # Efw term: rock + water compressibility
-    # Efw = Boi * (Cf + Cw * Swc) / (1 - Swc) * ΔP
-    prod["Efw"] = Boi * ((Cf + Cw * Swc) / (1.0 - Swc)) * prod["dP"]
+# ΔP = Pi - P  (pressure drop)
+prod["dP"] = Pi - prod["p"]
 
-    # Eo term: oil expansion + liberated solution gas
-    # Eo = (Bo - Boi) + (Rs - Rsi) * Bg
-    prod["Eo"] = (prod["Bo"] - Boi) + (prod["Rs"] - Rsi) * prod["Bg"]
+# Efw term: rock + water compressibility
+prod["Efw"] = Boi * ((Cf + Cw * Swc) / (1.0 - Swc)) * prod["dP"]
 
-    # Eg term: gas-cap gas expansion (simple form)
-    # Eg = Bg - Bgi
-    prod["Eg"] = prod["Bg"] - Bgi
+# Eo term
+prod["Eo"] = (prod["Bo"] - Boi) + (prod["Rs"] - Rsi) * prod["Bg"]
 
-    # Production gas–oil ratio Rp
-    prod["Rp"] = prod["Gp"] / prod["Np"]
-    prod["Rp"] = prod["Rp"].replace([np.inf, -np.inf], np.nan).fillna(0)
+# Eg term
+prod["Eg"] = prod["Bg"] - Bgi
 
-    # F term (cumulative underground withdrawal)
-    # F = Np * [ (Bo - Boi) + (Rp - Rs) * Bg ]
-    prod["F"] = prod["Np"] * ((prod["Bo"] - Boi) + (prod["Rp"] - prod["Rs"]) * prod["Bg"])
+# Rp
+prod["Rp"] = prod["Gp"] / prod["Np"]
+prod["Rp"] = prod["Rp"].replace([np.inf, -np.inf], np.nan).fillna(0)
 
-    # Havlena–Odeh straight-line variables
-    # Y = F / (Eo + Efw)
-    # X = Eg / (Eo + Efw)
-    denom = prod["Eo"] + prod["Efw"]
-    prod["x"] = prod["Eg"] / denom
-    prod["y"] = prod["F"] / denom
+# F term
+prod["F"] = prod["Np"] * ((prod["Bo"] - Boi) + (prod["Rp"] - prod["Rs"]) * prod["Bg"])
+
+# HO straight-line variables
+den = prod["Eo"] + prod["Efw"]
+prod["x"] = prod["Eg"] / den
+prod["y"] = prod["F"] / den
+
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
         reg_data = prod_clean.sort_values("x", ascending=True).iloc[0:6]
