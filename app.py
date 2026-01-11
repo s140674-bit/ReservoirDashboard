@@ -296,29 +296,42 @@ if uploaded:
     # --- Material Balance Calculations (F = N * Eo + G * Eg +Efw) ---
     # ---Water & formation compressibilityterm(Efw)---
     #load extra parameters
-    Swc = float(init.get("Swc", 0))
-    Cw = float(init.get("Cw", 0))
-    Cf = float(init.get("Cf", 0))
-    #calculate deltaP
+    Swc = float(init.get("Swc", 0.0))
+    Cw  = float(init.get("Cw",  0.0))
+    Cf  = float(init.get("Cf",  0.0))
+
+    # Initial pressure (from first row)
     Pi = prod["p"].iloc[0]
-    prod["dP"] = prod["p"] - Pi
-    prod["Efw"] = Boi * ((Cw * Swc) + Cf) * prod["dP"] / (1.0 - Swc)
-    prod["Eo"] = (prod["Bo"] - Boi )+ ((Rsi - prod["Rs"]) * prod["Bg"])
-    prod["Eg"] = Boi*((prod["Bg"]/Bgi)-1)
-    # --- Compute Rp exactly like Excel --- 
+
+    # ΔP = Pi - P  (pressure drop, should be positive as pressure declines)
+    prod["dP"] = Pi - prod["p"]
+
+    # Efw term: rock + water compressibility
+    # Efw = Boi * (Cf + Cw * Swc) / (1 - Swc) * ΔP
+    prod["Efw"] = Boi * ((Cf + Cw * Swc) / (1.0 - Swc)) * prod["dP"]
+
+    # Eo term: oil expansion + liberated solution gas
+    # Eo = (Bo - Boi) + (Rs - Rsi) * Bg
+    prod["Eo"] = (prod["Bo"] - Boi) + (prod["Rs"] - Rsi) * prod["Bg"]
+
+    # Eg term: gas-cap gas expansion
+    # Common simple form: Eg = Bg - Bgi
+    prod["Eg"] = prod["Bg"] - Bgi
+
+    # --- Production gas–oil ratio Rp ---
     prod["Rp"] = prod["Gp"] / prod["Np"]
-    prod["Rp"] = prod["Rp"].replace([np.inf, -np.inf], 0).fillna(0)
+    prod["Rp"] = prod["Rp"].replace([np.inf, -np.inf], np.nan).fillna(0)
 
-    # --- Compute F exactly like Excel formula ---
-    prod["F"] = prod["Np"] * (prod["Bo"] + prod["Bg"]*(prod["Rp"] - prod["Rs"]))
+    # --- F term (cumulative underground withdrawal) ---
+    # F = Np * [ (Bo - Boi) + (Rp - Rs) * Bg ]
+    prod["F"] = prod["Np"] * ((prod["Bo"] - Boi) + (prod["Rp"] - prod["Rs"]) * prod["Bg"])
 
-    # Calculate X and Y for the straight line (Y = N*X + G)
-    prod["x"] = (prod["Eg"] + prod["Efw"])/ (prod["Eo"] + prod["Efw"])
-    prod["y"] = prod["F"] / (prod["Eo"] + prod["Efw"])
-
-    # Handle division by zero/inf values
-    prod_clean = prod.replace([np.inf, -np.inf], np.nan).dropna()
-
+    # --- Havlena–Odeh straight-line variables ---
+    # Y = F / (Eo + Efw)
+    # X = Eg / (Eo + Efw)
+    denom = prod["Eo"] + prod["Efw"]
+    prod["x"] = prod["Eg"] / denom
+    prod["y"] = prod["F"] / denom
     
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
