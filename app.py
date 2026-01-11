@@ -319,24 +319,33 @@ if uploaded:
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
         reg_data = prod_clean.sort_values("x", ascending=True).iloc[-6:]
+       # --- Straight-Line Fit (Polyfit) ---
         coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
-        Nm = coeffs[0]
-        N = coeffs[1]
-        m = Nm / N
-        G = N * m * (Boi / Bgi)
+        Nm = coeffs[0]          # slope
+        N = coeffs[1]           # intercept
+        m = Nm / N              # gas-cap ratio
+        G = N * m * (Boi / Bgi) # gas in place estimate
 
-        # --- Detect if gas cap is physically impossible ---
+        # --- Detect if Gas Cap Physically Exists ---
         if m < 0:
             m = 0
             G = 0
+            flat_case = True
             gas_status = "No gas cap detected — reservoir is undersaturated"
         else:
+            flat_case = False
             gas_status = "Gas cap present"
 
-        y_fit = Nm * prod_clean["x"] + N
-        ss_total = ((prod_clean["y"] - prod_clean["y"].mean()) ** 2).sum()
-        ss_residual = ((prod_clean["y"] - y_fit) ** 2).sum()
-        R_squared = 1 - (ss_residual / ss_total)
+        # --- Choose the Correct Line Fit ---
+        if flat_case:
+          # Flat line at N ONLY
+            y_fit = np.full_like(prod_clean["x"], N)
+            R_squared = 1.0  # perfect match for undersaturated reservoir
+        else:
+            y_fit = Nm * prod_clean["x"] + N
+            ss_total = ((prod_clean["y"] - prod_clean["y"].mean()) ** 2).sum()
+            ss_residual = ((prod_clean["y"] - y_fit) ** 2).sum()
+            R_squared = 1 - (ss_residual / ss_total)
 
         st.header("📈 Analysis Results and Visualizations")
         tab1, tab2, tab3 = st.tabs(["📊 Regression Plot", "📚 Supporting Data", "📝 Equations & Metrics"])
