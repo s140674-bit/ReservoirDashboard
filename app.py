@@ -254,23 +254,23 @@ if uploaded:
         # -----------------------------------------------------------------------
 
       # Make parameters case-insensitive and strip spaces
-init = pd.Series(
+    init = pd.Series(
     init_df["Value"].values,
     index=init_df["Parameter"].str.strip().str.lower()
 )
 
-def to_float(x):
-    if isinstance(x, str):
-        x = x.replace("−", "-")
-    return float(x)
+    def to_float(x):
+        if isinstance(x, str):
+            x = x.replace("−", "-")
+        return float(x)
 
-Boi = to_float(init["boi"])
-Bgi = to_float(init["bgi"])
-Rsi = to_float(init["rsi"])
-Pi  = to_float(init.get("pi", prod["p"].iloc[0])) 
-Swc = to_float(init["swc"])
-Cf  = to_float(init["cf"])
-Cw  = to_float(init["cw"])
+    Boi = to_float(init["boi"])
+    Bgi = to_float(init["bgi"])
+    Rsi = to_float(init["rsi"])
+    Pi  = to_float(init.get("pi", prod["p"].iloc[0])) 
+    Swc = to_float(init["swc"])
+    Cf  = to_float(init["cf"])
+    Cw  = to_float(init["cw"])
         # Check if conversion was successful
         if pd.isna(Boi) or pd.isna(Bgi) or pd.isna(Rsi):
             st.error("Error: Initial parameters (Boi, Bgi, Rsi) must be numeric values.")
