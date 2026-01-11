@@ -297,7 +297,7 @@ if uploaded:
     prod["Efw"] = Boi * ((Cf + Cw * Swc) / (1.0 - Swc)) * prod["dP"]
 
     # Eo term: oil expansion + liberated solution gas
-    prod["Eo"] = (prod["Bo"] - Boi) + (prod["Rs"] - Rsi) * prod["Bg"]
+    prod["Eo"] = (prod["Bo"] - Boi) + (Rsi - prod["Rs"]) * prod["Bg"]
 
     # Eg term: gas-cap gas expansion (simple form)
     prod["Eg"] = prod["Bg"] - Bgi
