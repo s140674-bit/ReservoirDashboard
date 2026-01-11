@@ -65,7 +65,7 @@ st.markdown("""
     }
     
     .stTabs [data-baseweb="tab"] {
-        background-color: var(--secondary-background) !important;
+        background-color: var(--secondary-background) !Important;
         color: var(--text-color) !important;
         border-radius: 5px 5px 0 0 !important;
     }
@@ -189,25 +189,25 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown("""
     #### Sheet 1: **"Production"** (Required Columns)
-    - **Bo** - Oil FVF
-    - **Bg** - Gas FVF
-    - **Rs** - Solution GOR
-    - **Np** - Cumulative oil production
-    - **Gp** - Cumulative gas production
+    - **Bo** - Oil FVF  
+    - **Bg** - Gas FVF  
+    - **Rs** - Solution GOR  
+    - **Np** - Cumulative oil production  
+    - **Gp** - Cumulative gas production  
     - **p** - Reservoir pressure
         """)
-    
+
 
 with col2:
     st.markdown("""
     #### Sheet 2: **"Initial"** (Required Parameters)
-    - **Boi** - Initial oil FVF
-    - **Bgi** - Initial gas FVF
-    - **Rsi** - Initial solution GOR
-    - **Swc** - Cannot water saturation
-    - **Cf** - formation compressibility
-    - **Cw** - water comperssibility
-    - **Pi** - initial pressure
+    - **Boi** - Initial oil FVF  
+    - **Bgi** - Initial gas FVF  
+    - **Rsi** - Initial solution GOR  
+    - **Swc** - Connate water saturation  
+    - **Cf** - Formation compressibility  
+    - **Cw** - Water compressibility  
+    - **Pi** - Initial pressure
     """)
 
 st.markdown("---")
@@ -228,10 +228,10 @@ uploaded = st.sidebar.file_uploader("Upload Excel file (.xlsx)", type=["xlsx"])
 with st.sidebar.expander("📝 User Guide: Excel File Format"):
     st.markdown("""
         The uploaded Excel file **must** contain two sheets:
-        1. **'Production' Sheet:** Contains time-dependent PVT and production data.
-           * **Required Columns:** `p`, `Np`, `Gp`, `Bo`, `Bg`, `Rs`. (Using uppercase P for maximum compatibility with your data)
-        2. **'Initial' Sheet:** Contains initial reservoir parameters.
-           * **Required Parameters (Parameter, Value):** Must include `Boi`, `Bgi`, `Rsi`.
+        1. **'Production' Sheet:** Contains time-dependent PVT and production data.  
+           * **Required Columns:** `p`, `Np`, `Gp`, `Bo`, `Bg`, `Rs`.  
+        2. **'Initial' Sheet:** Contains initial reservoir parameters.  
+           * **Required Parameters (Parameter, Value):** `Boi`, `Bgi`, `Rsi`, `Swc`, `Cf`, `Cw`, `Pi`.
     """)
 
 
@@ -241,26 +241,18 @@ if uploaded:
         prod = pd.read_excel(uploaded, sheet_name="Production")
         init_df = pd.read_excel(uploaded, sheet_name="Initial")
         
-        # --- FIXES for Robustness (Addresses all previous KeyErrors/crashes) ---
-        # 1. Strip whitespace from all column names (Solves hidden space issue)
-        prod.columns = prod.columns.str.strip() 
-        # 2. Drop columns that are entirely NaN (e.g., blank columns)
-        prod = prod.dropna(axis=1, how='all')
-        # 3. Convert numeric columns to numeric types (handles string values)
+        # Clean production sheet
+        prod.columns = prod.columns.str.strip()
+        prod = prod.dropna(axis=1, how="all")
         numeric_cols = ["p", "Np", "Gp", "Bo", "Bg", "Rs"]
         for col in numeric_cols:
             if col in prod.columns:
-                prod[col] = pd.to_numeric(prod[col], errors='coerce')
-        # -----------------------------------------------------------------------
+                prod[col] = pd.to_numeric(prod[col], errors="coerce")
 
-      # Make parameters case-insensitive and strip spaces
-        # --- Load Initial Sheet (case-proof) ---
+        # Clean initial sheet and make parameters case-insensitive
         init_df.columns = init_df.columns.str.strip()
-
-        # Make parameters case-insensitive
         parameters = init_df["Parameter"].str.strip().str.lower()
         values = init_df["Value"]
-
         init = pd.Series(values.values, index=parameters.values)
 
         def to_float(x):
@@ -268,50 +260,35 @@ if uploaded:
                 x = x.replace("−", "-")
             return float(x)
 
-        # Required initial parameters
         Boi = to_float(init["boi"])
         Bgi = to_float(init["bgi"])
         Rsi = to_float(init["rsi"])
         Pi  = to_float(init.get("pi", prod["p"].iloc[0]))
-
-        # Optional but required for Efw
         Swc = to_float(init["swc"])
         Cf  = to_float(init["cf"])
         Cw  = to_float(init["cw"])
-   
-        # Check if conversion was successful
-        if pd.isna(Boi) or pd.isna(Bgi) or pd.isna(Rsi):
-            st.error("Error: Initial parameters (Boi, Bgi, Rsi) must be numeric values.")
-            st.stop()
-        if pd.isna(Cw) or pd.isna(Cf) or pd.isna(Swc):
-            st.error("Error: Initial parameters (Cw, Cf, Swc) must be numeric values.")
-            st.stop()
 
     except Exception as e:
-        st.error(f"Error loading data. Check your sheet names ('Production', 'Initial') or Initial parameters ('Boi', 'Bgi', 'Rsi'). Details: {e}")
+        st.error(f"Error loading data. Check your 'Production' and 'Initial' sheets and parameters. Details: {e}")
         st.stop()
 
-
-    # --- Input Validation Check (Using robust uppercase 'P') ---
+    # --- Input Validation Check ---
     required_prod_cols = ["p", "Np", "Gp", "Bo", "Bg", "Rs"]
     missing_prod_cols = [col for col in required_prod_cols if col not in prod.columns]
 
     if missing_prod_cols:
         st.error(f"Input Error: The 'Production' sheet is missing the required columns: {', '.join(missing_prod_cols)}. Please check your Excel column headers for typos!")
         st.stop()
-    # ------------------------------------------------------------------
 
     # Display Initial Parameters in Sidebar
     st.sidebar.markdown("---")
     st.sidebar.subheader("Initial Parameters Used:")
     st.sidebar.metric("Initial $B_{oi}$ (bbl/STB)", f"{Boi:.4f}")
     st.sidebar.metric("Initial $R_{si}$ (SCF/STB)", f"{Rsi:,.0f}")
+    st.sidebar.metric("Initial $P_i$ (psia)", f"{Pi:,.0f}")
     st.sidebar.markdown("---")
 
-
-    # --- Material Balance Calculations (Havlena–Odeh) ---
-
-   # --- Material Balance Calculations (Corrected) ---
+    # --- Material Balance Calculations (Corrected) ---
 
     # ΔP = Pi - P  (pressure drop)
     prod["dP"] = Pi - prod["p"]
@@ -319,50 +296,47 @@ if uploaded:
     # Efw term: rock + water compressibility
     prod["Efw"] = Boi * ((Cf + Cw * Swc) / (1.0 - Swc)) * prod["dP"]
 
-    # Eo term
+    # Eo term: oil expansion + liberated solution gas
     prod["Eo"] = (prod["Bo"] - Boi) + (prod["Rs"] - Rsi) * prod["Bg"]
 
-    # Eg term
+    # Eg term: gas-cap gas expansion (simple form)
     prod["Eg"] = prod["Bg"] - Bgi
 
-    # Rp
+    # Rp (production GOR)
     prod["Rp"] = prod["Gp"] / prod["Np"]
     prod["Rp"] = prod["Rp"].replace([np.inf, -np.inf], np.nan).fillna(0)
 
-    # F term
+    # F term (cumulative underground withdrawal)
     prod["F"] = prod["Np"] * ((prod["Bo"] - Boi) + (prod["Rp"] - prod["Rs"]) * prod["Bg"])
 
-    # HO straight-line variables
-    den = prod["Eo"] + prod["Efw"]
-    prod["x"] = prod["Eg"] / den
-    prod["y"] = prod["F"] / den
+    # Havlena–Odeh straight-line variables
+    denom = prod["Eo"] + prod["Efw"]
+    prod["x"] = prod["Eg"] / denom
+    prod["y"] = prod["F"] / denom
+
+    # Clean data for regression and plotting
+    prod_clean = prod.replace([np.inf, -np.inf], np.nan).dropna()
 
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
         reg_data = prod_clean.sort_values("x", ascending=True).iloc[0:6]
-        # Perform linear regression on correct data
         coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
         Nm = coeffs[0]
         N = coeffs[1]
         m = Nm / N
         G = N * m * (Boi / Bgi)
-        
-        # Calculate R-squared for goodness of fit
+
         y_fit = Nm * prod_clean["x"] + N
         ss_total = ((prod_clean["y"] - prod_clean["y"].mean()) ** 2).sum()
         ss_residual = ((prod_clean["y"] - y_fit) ** 2).sum()
         R_squared = 1 - (ss_residual / ss_total)
-        
-        
-        # --- Display Results in Tabs (Major Improvement for Organization) ---
+
         st.header("📈 Analysis Results and Visualizations")
         tab1, tab2, tab3 = st.tabs(["📊 Regression Plot", "📚 Supporting Data", "📝 Equations & Metrics"])
 
-
-        # --- Tab 3: Equations & Metrics ---
+        # Tab 3: Equations & Metrics
         with tab3:
             st.subheader("Final Calculated Parameters")
-            # Use columns for a neat presentation of metrics
             col_N, col_G, col_m, col_R2 = st.columns(4)
 
             with col_N:
@@ -376,92 +350,77 @@ if uploaded:
 
             st.markdown("---")
             st.subheader("Havlena–Odeh Equation and Fit")
-            st.latex(r'F = N(Eo+Efw+GEg)')
+            st.latex(r'\\frac{F}{E_o+E_{fw}} = N + mN \\frac{E_g}{E_o+E_{fw}}')
             st.markdown(f"""
                 The resulting straight-line fit equation is:
                 $$ Y = ({Nm:,.2f}) X + ({N:,.2f}) $$
             """)
 
-
-        # --- Tab 1: Interactive Plot with Residuals (Custom Colors/Shapes/Hover Data) ---
+        # Tab 1: Regression Plot
         with tab1:
-            st.subheader(r"Havlena–Odeh Straight-Line Plot F/(Ef,w+Eo) vs (Eg+Ef,w)/(Ef,w+Eo)")
+            st.subheader(r"Havlena–Odeh Straight-Line Plot F/(E_o+E_{fw}) vs E_g/(E_o+E_{fw})")
             
             fig = make_subplots(rows=2, cols=1, 
                                 row_heights=[0.8, 0.2], 
                                 shared_xaxes=True, 
                                 vertical_spacing=0.1,
-                                subplot_titles=(r'Main Plot: F/(Ef,w+Eo) vs (Eg+Ef,w)/(Ef,w+Eo),'
-                                        'Residuals Analysis'))
-                                
-            # 1. Main Plot
-            fig.add_trace(go.Scatter(
-                x=prod_clean["x"], 
-                y=prod_clean["y"], 
-                mode="markers", 
-                name="Production Data", 
-                marker=dict(
-                    size=8, 
-                    color='#E69F00', # Gold/Oil color
-                    symbol='circle-open' 
-                ),
-                # Show Pressure and Np when hovering (High Interactivity Bonus!)
-                hovertemplate="<b>P:</b> %{customdata[0]:,.0f} psia<br><b>Np:</b> %{customdata[1]:,.2f} MMSTB<br><b>X:</b> %{x:.4f}<br><b>Y:</b> %{y:.4f}<extra></extra>",
-                customdata=prod_clean[['p', 'Np']] 
-                ),
-                row=1, col=1)
-            
-            # Add the fitted line
-            fig.add_trace(go.Scatter(
-                x=prod_clean["x"], 
-                y=y_fit, 
-                mode="lines", 
-                name=f"Linear Fit", 
-                line=dict(color='#0072B2', width=3) # Deep Blue for the line
-                ),
-                row=1, col=1)
-            
-            # Labeling the main plot axes
-            fig.update_yaxes(title_text=r"F/(Ef,w+Eo)", row=1, col=1)
-            fig.update_xaxes(showticklabels=False, row=1, col=1) 
+                                subplot_titles=("Main Plot", "Residuals"))
 
-            # 2. Residuals Plot (Custom Coloring based on sign)
+            fig.add_trace(go.Scatter(
+                x=prod_clean["x"],
+                y=prod_clean["y"],
+                mode="markers",
+                name="Production Data",
+                marker=dict(
+                    size=8,
+                    color="#E69F00",
+                    symbol="circle-open"
+                ),
+                hovertemplate="<b>P:</b> %{customdata[0]:,.0f} psia<br><b>Np:</b> %{customdata[1]:,.2f} STB<br><b>X:</b> %{x:.4f}<br><b>Y:</b> %{y:.4f}<extra></extra>",
+                customdata=prod_clean[["p", "Np"]]
+            ), row=1, col=1)
+
+            fig.add_trace(go.Scatter(
+                x=prod_clean["x"],
+                y=y_fit,
+                mode="lines",
+                name="Linear Fit",
+                line=dict(color="#0072B2", width=3)
+            ), row=1, col=1)
+
+            fig.update_yaxes(title_text="F / (Eo + Efw)", row=1, col=1)
+            fig.update_xaxes(showticklabels=False, row=1, col=1)
+
             residuals = prod_clean["y"] - y_fit
-            residual_color = np.where(residuals >= 0, '#0072B2', '#D55E00') # Blue for positive, Orange for negative
-            
-            fig.add_trace(go.Scatter(x=prod_clean["x"], y=residuals, mode='markers', 
-                                     name='Residuals', 
-                                     marker=dict(size=6, color=residual_color)),
-                          row=2, col=1)
-            
-            # Add zero line for residuals
+            residual_color = np.where(residuals >= 0, "#0072B2", "#D55E00")
+
+            fig.add_trace(go.Scatter(
+                x=prod_clean["x"],
+                y=residuals,
+                mode="markers",
+                name="Residuals",
+                marker=dict(size=6, color=residual_color)
+            ), row=2, col=1)
+
             fig.add_hline(y=0, line_dash="dash", line_color="gray", row=2, col=1)
-            
-            # Labeling the residuals plot axes
             fig.update_yaxes(title_text="Residuals", row=2, col=1)
-            fig.update_xaxes(title_text=r"(Eg+Ef,w)/(Ef,w+Eo)", row=2, col=1)
-            
+            fig.update_xaxes(title_text="E_g / (E_o + E_fw)", row=2, col=1)
+
             fig.update_layout(height=600, showlegend=True, hovermode="x unified")
-            
+
             st.plotly_chart(fig, use_container_width=True)
 
-        # --- Tab 2: Supporting Data Tables ---
+        # Tab 2: Supporting Data
         with tab2:
-            st.subheader("Calculated Variables ($F, E_o, E_g, E_{fw}$) and Plot Data ($X, Y$)")
-            display_cols = ['p', 'Np', 'Gp','Rp', 'F', 'Eo', 'Eg', 'Efw', 'x' , 'y']
-            
-            # Use prod_clean for display
+            st.subheader("Calculated Variables and Plot Data")
+            display_cols = ['p', 'Np', 'Gp', 'Rp', 'F', 'Eo', 'Eg', 'Efw', 'x', 'y']
             if not prod_clean.empty:
-                st.dataframe(prod_clean[display_cols].style.format(precision=4)) 
-            
+                st.dataframe(prod_clean[display_cols].style.format(precision=4))
                 st.subheader("Input Production Data (First 5 Rows)")
                 st.dataframe(prod.head(5))
             else:
                 st.warning("No clean data points to display.")
-
     else:
         st.warning("Not enough clean data points (at least 2) remaining after filtering to perform linear regression. Check the data in your Excel file.")
-
 else:
     st.info("Upload an Excel file to start the Havlena-Odeh analysis.")
-
