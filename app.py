@@ -256,8 +256,7 @@ if uploaded:
       # Make parameters case-insensitive and strip spaces
     init = pd.Series(
     init_df["Value"].values,
-    index=init_df["Parameter"].str.strip().str.lower()
-)
+    index=init_df["Parameter"].str.strip().str.lower())
 
     def to_float(x):
         if isinstance(x, str):
