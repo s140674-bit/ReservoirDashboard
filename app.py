@@ -319,7 +319,7 @@ if uploaded:
 
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
-        reg_data = prod_clean.sort_values("x", ascending=True).iloc[0:6]
+        reg_data = prod_clean.sort_values("x", ascending=True).iloc[-6:]
         coeffs = np.polyfit(reg_data["x"], reg_data["y"], 1)
         Nm = coeffs[0]
         N = coeffs[1]
