@@ -253,16 +253,24 @@ if uploaded:
                 prod[col] = pd.to_numeric(prod[col], errors='coerce')
         # -----------------------------------------------------------------------
 
-        init = pd.Series(init_df["Value"].values, index=init_df["Parameter"].values)
-        
-        # Convert initial parameters to numeric
-        Boi = pd.to_numeric(init["Boi"], errors='coerce')
-        Bgi = pd.to_numeric(init["Bgi"], errors='coerce')
-        Rsi = pd.to_numeric(init["Rsi"], errors='coerce')
-        Cw = pd.to_numeric(init["Cw"], errors='coerce')
-        Cf = pd.to_numeric(init["Cf"], errors='coerce')
-        Swc = pd.to_numeric(init["Swc"], errors='coerce')
-        
+      # Make parameters case-insensitive and strip spaces
+init = pd.Series(
+    init_df["Value"].values,
+    index=init_df["Parameter"].str.strip().str.lower()
+)
+
+def to_float(x):
+    if isinstance(x, str):
+        x = x.replace("−", "-")
+    return float(x)
+
+Boi = to_float(init["boi"])
+Bgi = to_float(init["bgi"])
+Rsi = to_float(init["rsi"])
+Pi  = to_float(init.get("pi", prod["p"].iloc[0])) 
+Swc = to_float(init["swc"])
+Cf  = to_float(init["cf"])
+Cw  = to_float(init["cw"])
         # Check if conversion was successful
         if pd.isna(Boi) or pd.isna(Bgi) or pd.isna(Rsi):
             st.error("Error: Initial parameters (Boi, Bgi, Rsi) must be numeric values.")
@@ -293,17 +301,9 @@ if uploaded:
     st.sidebar.markdown("---")
 
 
-    # --- Material Balance Calculations (F = N * Eo + G * Eg +Efw) ---
-    # ---Water & formation compressibilityterm(Efw)---
-    #load extra parameters
-    Swc = float(init.get("Swc", 0.0))
-    Cw  = float(init.get("Cw",  0.0))
-    Cf  = float(init.get("Cf",  0.0))
+    # --- Material Balance Calculations (Havlena–Odeh) ---
 
-    # Initial pressure (from first row)
-    Pi = prod["p"].iloc[0]
-
-    # ΔP = Pi - P  (pressure drop, should be positive as pressure declines)
+    # ΔP = Pi - P  (pressure drop يكون موجب لما الضغط ينقص)
     prod["dP"] = Pi - prod["p"]
 
     # Efw term: rock + water compressibility
@@ -314,25 +314,24 @@ if uploaded:
     # Eo = (Bo - Boi) + (Rs - Rsi) * Bg
     prod["Eo"] = (prod["Bo"] - Boi) + (prod["Rs"] - Rsi) * prod["Bg"]
 
-    # Eg term: gas-cap gas expansion
-    # Common simple form: Eg = Bg - Bgi
+    # Eg term: gas-cap gas expansion (simple form)
+    # Eg = Bg - Bgi
     prod["Eg"] = prod["Bg"] - Bgi
 
-    # --- Production gas–oil ratio Rp ---
+    # Production gas–oil ratio Rp
     prod["Rp"] = prod["Gp"] / prod["Np"]
     prod["Rp"] = prod["Rp"].replace([np.inf, -np.inf], np.nan).fillna(0)
 
-    # --- F term (cumulative underground withdrawal) ---
+    # F term (cumulative underground withdrawal)
     # F = Np * [ (Bo - Boi) + (Rp - Rs) * Bg ]
     prod["F"] = prod["Np"] * ((prod["Bo"] - Boi) + (prod["Rp"] - prod["Rs"]) * prod["Bg"])
 
-    # --- Havlena–Odeh straight-line variables ---
+    # Havlena–Odeh straight-line variables
     # Y = F / (Eo + Efw)
     # X = Eg / (Eo + Efw)
     denom = prod["Eo"] + prod["Efw"]
     prod["x"] = prod["Eg"] / denom
     prod["y"] = prod["F"] / denom
-    
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
         reg_data = prod_clean.sort_values("x", ascending=True).iloc[0:6]
