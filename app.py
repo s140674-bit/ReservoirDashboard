@@ -307,8 +307,7 @@ if uploaded:
     prod["Rp"] = prod["Rp"].replace([np.inf, -np.inf], np.nan).fillna(0)
 
     # F term (cumulative underground withdrawal)
-    prod["F"] = prod["Np"] * ((prod["Bo"] - Boi) + (prod["Rp"] - prod["Rs"]) * prod["Bg"])
-
+    prod["F"] = prod["Np"] * prod["Bo"] + (prod["Gp"] - prod["Np"] * prod["Rs"]) * prod["Bg"]
     # Havlena–Odeh straight-line variables
     denom = prod["Eo"] + prod["Efw"]
     prod["x"] = prod["Eg"] / denom
