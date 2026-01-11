@@ -325,6 +325,14 @@ if uploaded:
         m = Nm / N
         G = N * m * (Boi / Bgi)
 
+        # --- Detect if gas cap is physically impossible ---
+        if m < 0:
+            m = 0
+            G = 0
+            gas_status = "No gas cap detected — reservoir is undersaturated"
+        else:
+            gas_status = "Gas cap present"
+
         y_fit = Nm * prod_clean["x"] + N
         ss_total = ((prod_clean["y"] - prod_clean["y"].mean()) ** 2).sum()
         ss_residual = ((prod_clean["y"] - y_fit) ** 2).sum()
@@ -348,6 +356,7 @@ if uploaded:
                 st.metric("Goodness of Fit ($R^2$)", f"{R_squared:.4f}")
 
             st.markdown("---")
+            st.info(gas_status)
             st.subheader("Havlena–Odeh Equation and Fit")
             st.latex(r'\\frac{F}{E_o+E_{fw}} = N + mN \\frac{E_g}{E_o+E_{fw}}')
             st.markdown(f"""
