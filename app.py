@@ -255,29 +255,29 @@ if uploaded:
 
       # Make parameters case-insensitive and strip spaces
         # --- Load Initial Sheet (case-proof) ---
-init_df.columns = init_df.columns.str.strip()
+        init_df.columns = init_df.columns.str.strip()
 
-# Make parameters case-insensitive
-parameters = init_df["Parameter"].str.strip().str.lower()
-values = init_df["Value"]
+        # Make parameters case-insensitive
+        parameters = init_df["Parameter"].str.strip().str.lower()
+        values = init_df["Value"]
 
-init = pd.Series(values.values, index=parameters.values)
+        init = pd.Series(values.values, index=parameters.values)
 
-def to_float(x):
-    if isinstance(x, str):
-        x = x.replace("−", "-")
-    return float(x)
+        def to_float(x):
+            if isinstance(x, str):
+                x = x.replace("−", "-")
+            return float(x)
 
-# Required initial parameters
-Boi = to_float(init["boi"])
-Bgi = to_float(init["bgi"])
-Rsi = to_float(init["rsi"])
-Pi  = to_float(init.get("pi", prod["p"].iloc[0]))
+        # Required initial parameters
+        Boi = to_float(init["boi"])
+        Bgi = to_float(init["bgi"])
+        Rsi = to_float(init["rsi"])
+        Pi  = to_float(init.get("pi", prod["p"].iloc[0]))
 
-# Optional but required for Efw
-Swc = to_float(init["swc"])
-Cf  = to_float(init["cf"])
-Cw  = to_float(init["cw"])
+        # Optional but required for Efw
+        Swc = to_float(init["swc"])
+        Cf  = to_float(init["cf"])
+        Cw  = to_float(init["cw"])
    
         # Check if conversion was successful
         if pd.isna(Boi) or pd.isna(Bgi) or pd.isna(Rsi):
@@ -313,29 +313,29 @@ Cw  = to_float(init["cw"])
 
    # --- Material Balance Calculations (Corrected) ---
 
-# ΔP = Pi - P  (pressure drop)
-prod["dP"] = Pi - prod["p"]
+    # ΔP = Pi - P  (pressure drop)
+    prod["dP"] = Pi - prod["p"]
 
-# Efw term: rock + water compressibility
-prod["Efw"] = Boi * ((Cf + Cw * Swc) / (1.0 - Swc)) * prod["dP"]
+    # Efw term: rock + water compressibility
+    prod["Efw"] = Boi * ((Cf + Cw * Swc) / (1.0 - Swc)) * prod["dP"]
 
-# Eo term
-prod["Eo"] = (prod["Bo"] - Boi) + (prod["Rs"] - Rsi) * prod["Bg"]
+    # Eo term
+    prod["Eo"] = (prod["Bo"] - Boi) + (prod["Rs"] - Rsi) * prod["Bg"]
 
-# Eg term
-prod["Eg"] = prod["Bg"] - Bgi
+    # Eg term
+    prod["Eg"] = prod["Bg"] - Bgi
 
-# Rp
-prod["Rp"] = prod["Gp"] / prod["Np"]
-prod["Rp"] = prod["Rp"].replace([np.inf, -np.inf], np.nan).fillna(0)
+    # Rp
+    prod["Rp"] = prod["Gp"] / prod["Np"]
+    prod["Rp"] = prod["Rp"].replace([np.inf, -np.inf], np.nan).fillna(0)
 
-# F term
-prod["F"] = prod["Np"] * ((prod["Bo"] - Boi) + (prod["Rp"] - prod["Rs"]) * prod["Bg"])
+    # F term
+    prod["F"] = prod["Np"] * ((prod["Bo"] - Boi) + (prod["Rp"] - prod["Rs"]) * prod["Bg"])
 
-# HO straight-line variables
-den = prod["Eo"] + prod["Efw"]
-prod["x"] = prod["Eg"] / den
-prod["y"] = prod["F"] / den
+    # HO straight-line variables
+    den = prod["Eo"] + prod["Efw"]
+    prod["x"] = prod["Eg"] / den
+    prod["y"] = prod["F"] / den
 
     # --- Linear Regression (Straight-Line Fit) ---
     if len(prod_clean) > 1:
